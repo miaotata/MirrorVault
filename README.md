@@ -1,54 +1,68 @@
-# MirrorVault — 自动备份工具
+# MirrorVault
 
-跨平台桌面备份软件，支持增量备份、双向同步、定时调度、版本保留与一键还原。
+> 跨平台桌面备份工具 · 增量备份 · 双向同步 · 定时调度 · 版本保留 · 一键还原
 
-## 功能特性
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/miaotata/MirrorVault/releases)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-success)]()
+[![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)]()
 
-### 备份模式
-| 模式 | 说明 |
-|------|------|
-| **增量备份** | 首次全量，后续仅复制变更文件，未变文件使用硬链接（零额外空间） |
-| **单向备份** | 源目录 → 目标位置，纯复制 |
-| **双向同步** | 源 ↔ 目标双向同步，自动检测冲突 |
-
-### 版本保留
-分层策略自动清理旧备份，节省存储空间。预设模板一键应用：
-
-| 预设 | 规则 |
-|------|------|
-| 1天全部 | 24h 内所有版本保留 |
-| 3天每天 | 1天内全部 + 1-3天每天1份 |
-| 7天每3天 | 在3天基础上 + 3-7天每3天1份 |
-| 30天每7天 | 在7天基础上 + 7-30天每7天1份 |
-| 90天删除 | 在30天基础上 + 30-90天每14天1份 |
-
-### 其他功能
-- **定时调度**：Cron 表达式，支持每小时/每天/每周快捷设置
-- **文件过滤**：按扩展名包含/排除，排除指定目录，最大文件大小限制
-- **加密压缩**：AES-256 加密 + ZIP 压缩（可选）
-- **备份校验**：SHA256 哈希验证文件完整性
-- **执行预览**：备份前预览变更文件列表
-- **还原向导**：按时间点浏览历史，支持单文件或全量还原
-- **系统托盘**：关闭窗口最小化到托盘，后台静默运行
-- **5 套主题**：Claude 暖调 / Apple 极简 / Vercel 几何 / Stripe 商务 / Spotify 深色
+MirrorVault 是一款专为个人用户与小型团队设计的轻量级自动备份桌面工具。支持**增量备份**、**单向复制**和**双向同步**三种模式，配合分层版本保留策略，在确保数据安全的同时有效节省存储空间。
 
 ---
 
-## 安装与运行
+## 功能一览
+
+### 核心能力
+
+| 功能 | 说明 |
+|------|------|
+| 📑 **增量备份** | 首次全量，后续仅复制变更文件。未变化文件使用硬链接，零额外空间 |
+| 📤 **单向备份** | 源目录 → 目标位置，纯复制模式 |
+| 🔄 **双向同步** | 源 ↔ 目标双向同步，自动检测并处理冲突 |
+| ⏱ **定时调度** | Cron 表达式驱动，支持每小时/每天/每周快捷预设 |
+| 📦 **版本保留** | 分层策略自动清理旧备份，5 个预设一键应用 |
+| 🔐 **AES-256 加密** | 备份数据 AES-256 加密 + ZIP 压缩 |
+| ✅ **备份校验** | SHA256 哈希验证文件完整性 |
+| 🔍 **执行预览** | 备份前预览变更文件列表，确认后执行 |
+| ↩ **还原向导** | 按时间点浏览历史，支持单文件或全量还原 |
+| 📋 **备份历史** | 查看每次备份耗时、文件数、状态等详细记录 |
+
+### 体验设计
+
+- **自包含单文件** — 双击运行，无需安装 .NET 运行时或任何依赖
+- **自定义标题栏** — 无边框设计，外层主题色边框，窗口可拖拽缩放
+- **5 套主题** — Claude 暖调 / Apple 极简 / Vercel 几何 / Stripe 商务 / Spotify 深色
+- **系统托盘** — 关闭窗口最小化到托盘，后台静默运行，托盘右键退出
+- **任务栏集成** — 任务栏显示图标，右键菜单支持「显示主窗口」和「退出」
+- **NAS / 网络存储** — 支持 SMB/CIFS 网络共享作为备份目标
+
+### 版本保留预设
+
+| 预设 | 24h 内 | 1-3 天 | 3-7 天 | 7-30 天 | 30-90 天 |
+|------|--------|--------|--------|---------|----------|
+| 1天全部 | 全部 | — | — | — | — |
+| 3天每天 | 全部 | 每天1份 | — | — | — |
+| 7天每3天 | 全部 | 每天1份 | 每3天1份 | — | — |
+| 30天每7天 | 全部 | 每天1份 | 每3天1份 | 每7天1份 | — |
+| 90天删除 | 全部 | 每天1份 | 每3天1份 | 每7天1份 | 每14天1份 |
+
+---
+
+## 下载与安装
 
 ### Windows
-下载 `MirrorVault.exe`，双击运行。无需安装 .NET 运行时。
+
+[**下载 MirrorVault.exe（97MB）**](https://github.com/miaotata/MirrorVault/releases/latest/download/MirrorVault.exe)
+
+双击运行，无需安装 .NET 运行时。首次启动时 Windows Defender 可能弹出警告，点击「更多信息」→「仍要运行」即可。
 
 ### Linux
+
+[**下载 MirrorVault（91MB）**](https://github.com/miaotata/MirrorVault/releases/latest/download/MirrorVault)
+
 ```bash
 chmod +x MirrorVault
 ./MirrorVault
-```
-
-### 开发者（源码运行）
-```bash
-conda activate backup_app
-dotnet run --project BackupApp.UI
 ```
 
 ---
@@ -56,64 +70,88 @@ dotnet run --project BackupApp.UI
 ## 使用指南
 
 ### 创建备份任务
+
 1. 点击 **+ 新建任务**
-2. **基本信息**：输入任务名称
-3. **源与目标**：添加要备份的文件夹，设置目标路径（本地 / NAS / 网络共享）
-4. **备份模式**：选择增量/单向/双向，设置定时调度（可选）
-5. **文件过滤**：设置包含/排除规则（可选）
-6. **版本保留**：选择预设或自定义分层策略
-7. **高级选项**：加密、压缩、校验、预览（可选）
+2. **基本信息** — 输入任务名称
+3. **源与目标** — 选择要备份的文件夹，设置目标路径（本地或网络存储）
+4. **备份模式** — 选择增量/单向/双向，设置定时调度（可选）
+5. **文件过滤** — 按扩展名包含或排除文件，设置大小上限（可选）
+6. **版本保留** — 选择预设策略或自定义分层规则
+7. **高级选项** — 加密、压缩、校验、执行前预览（可选）
 8. 点击 **保存**
 
 ### 执行备份
+
 - 选中任务 → 点击 **▶ 立即执行**
 - 或等待定时调度自动触发
 
 ### 还原文件
+
 - 选中任务 → 点击 **↺ 恢复向导**
-- 选择时间点 → 选择文件（或全量）→ 执行还原
+- 选择时间点 → 选择目标文件（支持全量）→ 确认还原
 
 ### 查看历史
+
 - 选中任务 → 点击 **📋 历史**
-- 查看每次备份的时间、文件数、状态、耗时
+- 浏览每次备份的执行详情
 
 ### 切换主题
-- 点击右上角 **⚙** → 主题 → 选择配色方案
+
+- 点击右上角 **⚙** → **主题** → 选择配色方案（即时生效）
 
 ---
 
-## NAS / 网络存储配置
+## NAS / 网络存储
 
-目标类型选择「网络共享」，路径格式：
+目标位置支持 SMB/CIFS 网络共享：
 
-| 系统 | 格式 |
-|------|------|
-| Windows | `\\192.168.1.100\共享名\目录` 或映射网络驱动器 `Z:\目录` |
-| Linux | 先挂载 `mount -t cifs //IP/共享名 /mnt/nas`，再填 `/mnt/nas/目录` |
+| 平台 | 路径格式 |
+|------|----------|
+| Windows | `\\192.168.1.100\共享名\目录` 或映射驱动器 `Z:\目录` |
+| Linux | 先挂载 `mount -t cifs //IP/共享名 /mnt/nas`，再填入 `/mnt/nas/目录` |
 
 ---
 
 ## 数据存储
 
-- **配置数据库**：`%APPDATA%/BackupApp/config.db`（SQLite）
-- **备份清单**：目标目录 `/manifests/` 下的 JSON 文件
-- **备份数据**：目标目录 `/data/` 下的时间戳文件夹
+| 数据 | 位置 |
+|------|------|
+| 配置数据库 | `%APPDATA%/BackupApp/config.db`（SQLite） |
+| 备份清单 | 目标目录 `/manifests/` JSON 文件 |
+| 备份数据 | 目标目录 `/data/` 时间戳文件夹 |
 
 ---
 
 ## 技术栈
 
-C# / .NET 8 + Avalonia UI · SQLite · JSON · 硬链接 · AES-256
+**C# / .NET 8 + Avalonia UI · SQLite · JSON · 硬链接 · AES-256**
+
+---
 
 ## 开发
 
 ```bash
+# 环境准备
+conda activate backup_app
+
 # 构建
 dotnet build
 
-# 发布 Windows exe
-dotnet publish -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+# 发布 Windows（自包含单文件）
+dotnet publish -r win-x64 --self-contained \
+  -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true
 
-# 发布 Linux
-dotnet publish -r linux-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
+# 发布 Linux（自包含单文件）
+dotnet publish -r linux-x64 --self-contained \
+  -p:PublishSingleFile=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true
 ```
+
+---
+
+## 作者
+
+**miaotata** · [github.com/miaotata](https://github.com/miaotata)
+
+© 2026 MirrorVault
