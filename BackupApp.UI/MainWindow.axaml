@@ -1,0 +1,219 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.MainWindow"
+        Title="MirrorVault"
+        Width="860" Height="580"
+        MinWidth="600" MinHeight="420"
+        WindowDecorations="None"
+        ShowInTaskbar="True"
+        Background="Transparent"
+        FontFamily="-apple-system, SF Pro Text, PingFang SC, Microsoft YaHei, sans-serif">
+    <!-- Outer theme border -->
+    <Border BorderThickness="2" CornerRadius="8"
+            BorderBrush="{DynamicResource AppPrimaryBrush}"
+            Background="{DynamicResource AppBgBrush}"
+            ClipToBounds="True">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- ====== Title Bar (draggable) ====== -->
+            <Border Grid.Row="0" Padding="16,8" Background="{DynamicResource AppSurfaceBrush}"
+                    BorderBrush="{DynamicResource AppHairlineBrush}" BorderThickness="0,0,0,0.5"
+                    PointerPressed="TitleBar_PointerPressed">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button x:Name="BtnBack" Content="&#x2190; 返回" FontSize="12"
+                                Background="Transparent" Foreground="{DynamicResource AppPrimaryBrush}"
+                                Padding="4,3" CornerRadius="4" IsVisible="False"/>
+                        <TextBlock Text="MirrorVault" FontSize="14" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource AppInkBrush}" VerticalAlignment="Center"/>
+                        <TextBlock Text="— 自动备份工具" FontSize="12"
+                                   Foreground="{DynamicResource AppMutedBrush}" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <!-- Window controls + settings -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                        <Button Content="⚙" Width="32" Height="28" FontSize="13"
+                                Background="Transparent" Foreground="{DynamicResource AppMutedBrush}"
+                                x:Name="BtnSettings" ToolTip.Tip="设置"/>
+                        <Button Content="─" Width="32" Height="28" FontSize="14"
+                                Background="Transparent" Foreground="{DynamicResource AppMutedBrush}"
+                                x:Name="BtnMinimize" ToolTip.Tip="最小化"/>
+                        <Button Content="□" Width="32" Height="28" FontSize="12"
+                                Background="Transparent" Foreground="{DynamicResource AppMutedBrush}"
+                                x:Name="BtnMaximize" ToolTip.Tip="最大化/还原"/>
+                        <Button Content="✕" Width="32" Height="28" FontSize="12"
+                                Background="Transparent" Foreground="{DynamicResource AppMutedBrush}"
+                                x:Name="BtnClose" ToolTip.Tip="关闭"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ====== Content ====== -->
+            <Grid Grid.Row="1">
+                <!-- Home Panel: Hero + Toolbar + TaskList -->
+                <Panel x:Name="HomePanel">
+                    <Grid RowDefinitions="Auto,Auto,*">
+                        <!-- Hero -->
+                        <StackPanel Grid.Row="0" Margin="32,24,32,0" Spacing="4">
+                            <TextBlock Text="MirrorVault — 自动备份工具"
+                                       FontSize="26" FontWeight="Bold"
+                                       Foreground="{DynamicResource AppInkBrush}"/>
+                            <TextBlock Text="管理您的备份任务，守护重要数据"
+                                       FontSize="13"
+                                       Foreground="{DynamicResource AppBodyBrush}" Margin="0,0,0,12"/>
+                        </StackPanel>
+
+                        <!-- Toolbar -->
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="32,8,32,16">
+                            <Button x:Name="BtnNewTask" Content="+ 新建任务"
+                                    Background="{DynamicResource AppPrimaryBrush}"
+                                    Foreground="{DynamicResource AppOnPrimaryBrush}"
+                                    FontWeight="Medium" FontSize="13"
+                                    Padding="14,7" CornerRadius="8"/>
+                            <Button x:Name="BtnEditTask" Content="✎ 编辑"
+                                    FontWeight="Medium" FontSize="13"
+                                    Padding="12,7" CornerRadius="8"
+                                    Background="{DynamicResource AppHairlineBrush}"
+                                    Foreground="{DynamicResource AppInkBrush}"/>
+                            <Button x:Name="BtnDeleteTask" Content="✕ 删除"
+                                    FontWeight="Medium" FontSize="13"
+                                    Padding="12,7" CornerRadius="8"
+                                    Background="{DynamicResource AppHairlineBrush}"
+                                    Foreground="{DynamicResource AppInkBrush}"/>
+                            <Border Width="1" Height="22" Margin="6,0"
+                                    Background="{DynamicResource AppHairlineBrush}"/>
+                            <Button x:Name="BtnRunNow" Content="▶ 立即执行"
+                                    FontSize="13" Padding="12,7" CornerRadius="8"
+                                    Background="Transparent"
+                                    Foreground="{DynamicResource AppBodyBrush}"/>
+                            <Button x:Name="BtnRestore" Content="↺ 恢复向导"
+                                    FontSize="13" Padding="12,7" CornerRadius="8"
+                                    Background="Transparent"
+                                    Foreground="{DynamicResource AppBodyBrush}"/>
+                            <Button x:Name="BtnHistory" Content="📋 历史"
+                                    FontSize="13" Padding="12,7" CornerRadius="8"
+                                    Background="Transparent"
+                                    Foreground="{DynamicResource AppBodyBrush}"/>
+                            <Button x:Name="BtnRefresh" Content="↻ 刷新"
+                                    FontSize="13" Padding="12,7" CornerRadius="8"
+                                    Background="Transparent"
+                                    Foreground="{DynamicResource AppBodyBrush}"/>
+                        </StackPanel>
+
+                        <!-- Task Cards -->
+                        <ScrollViewer Grid.Row="2" Padding="32,0,32,8">
+                            <Grid>
+                                <!-- Empty State -->
+                                <Border x:Name="EmptyState" IsVisible="False"
+                                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                                        Padding="40,48" CornerRadius="16" Margin="0,20,0,0"
+                                        Background="{DynamicResource AppCardBgBrush}"
+                                        BorderBrush="{DynamicResource AppHairlineBrush}"
+                                        BorderThickness="0.5">
+                                    <StackPanel Spacing="10" HorizontalAlignment="Center">
+                                        <TextBlock Text="📂" FontSize="40" HorizontalAlignment="Center"/>
+                                        <TextBlock Text="还没有备份任务" FontSize="16" FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource AppInkBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                        <TextBlock Text="点击「+ 新建任务」开始保护您的数据"
+                                                   FontSize="13" Foreground="{DynamicResource AppMutedBrush}"
+                                                   HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <ListBox x:Name="TaskListBox" Background="Transparent" BorderThickness="0">
+                                <ListBox.Styles>
+                                    <Style Selector="ListBoxItem">
+                                        <Setter Property="Padding" Value="0"/>
+                                        <Setter Property="Margin" Value="0,0,0,6"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                    </Style>
+                                </ListBox.Styles>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Padding="18,16" CornerRadius="12"
+                                                Background="{DynamicResource AppCardBgBrush}"
+                                                BorderBrush="{DynamicResource AppHairlineBrush}"
+                                                BorderThickness="0.5">
+                                            <Grid ColumnDefinitions="44,*,Auto">
+                                                <Border Grid.Column="0" Width="44" Height="44"
+                                                        CornerRadius="8" Margin="0,0,14,0"
+                                                        Background="{DynamicResource AppSurfaceBrush}"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding Icon}" FontSize="18"
+                                                               HorizontalAlignment="Center"
+                                                               VerticalAlignment="Center"/>
+                                                </Border>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                                                    <TextBlock Text="{Binding Name}" FontSize="15"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource AppInkBrush}"/>
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="{Binding ModeText}" FontSize="12"
+                                                                   Foreground="{DynamicResource AppBodyBrush}"/>
+                                                        <Ellipse Width="3" Height="3" Fill="{DynamicResource AppMutedBrush}"
+                                                                 VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding DisplayLastRun}" FontSize="12"
+                                                                   Foreground="{DynamicResource AppBodyBrush}"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <!-- Clickable status toggle button -->
+                                                <Button Grid.Column="2" VerticalAlignment="Center"
+                                                        Margin="0,0,0,0" Padding="8,4"
+                                                        CornerRadius="20" BorderThickness="0"
+                                                        Background="{Binding StatusBg}"
+                                                        Foreground="{Binding StatusFg}"
+                                                        FontSize="11" FontWeight="SemiBold"
+                                                        Content="{Binding StatusText}"
+                                                        Cursor="Hand"
+                                                        Click="StatusBadge_Click"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            </Grid>
+                        </ScrollViewer>
+                    </Grid>
+                </Panel>
+
+                <!-- View Container -->
+                <ContentControl x:Name="ViewContainer" IsVisible="False"/>
+            </Grid>
+
+            <!-- ====== Status Bar ====== -->
+            <Border Grid.Row="2" Padding="18,10"
+                    Background="{DynamicResource AppSurfaceBrush}"
+                    BorderBrush="{DynamicResource AppHairlineBrush}" BorderThickness="0,0.5,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                    <Ellipse x:Name="StatusDot" Width="7" Height="7" Fill="{DynamicResource AppSuccessBrush}"
+                             VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtStatus" Text="就绪"
+                               FontSize="12" VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppBodyBrush}"/>
+                    <TextBlock Text="—" FontSize="12"
+                               Foreground="{DynamicResource AppMutedBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtNextRun" Text="下次调度: 无"
+                               FontSize="12" VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                </StackPanel>
+                <!-- Resize grip -->
+                <TextBlock Grid.Column="1" Text="⤡" FontSize="14"
+                           Foreground="{DynamicResource AppMutedBrush}"
+                           VerticalAlignment="Center" Cursor="BottomRightCorner"
+                           PointerPressed="ResizeGrip_PointerPressed"/>
+                </Grid>
+            </Border>
+
+            <!-- Overlay layer -->
+            <Border x:Name="Overlay" IsVisible="False" Background="#80000000" Padding="60"
+                    Grid.RowSpan="3" ZIndex="100">
+                <Border x:Name="OverlayCard" CornerRadius="16"
+                        Background="{DynamicResource AppBgBrush}"
+                        BorderBrush="{DynamicResource AppHairlineBrush}"
+                        BorderThickness="0.5"
+                        Padding="16" MaxWidth="700" MaxHeight="480"
+                        VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            </Border>
+        </Grid>
+    </Border>
+</Window>

@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.PreviewView">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,10">
+            <Button x:Name="BtnProceed" Content="确认执行" Width="100"/>
+            <Button x:Name="BtnCancel" Content="取消" Width="80"/>
+        </StackPanel>
+        <StackPanel Spacing="10">
+            <TextBlock x:Name="TitleText" FontSize="16" FontWeight="Bold"/>
+            <StackPanel Orientation="Horizontal" Spacing="20">
+                <TextBlock x:Name="AddedText" Foreground="#2E7D32"/>
+                <TextBlock x:Name="ModifiedText" Foreground="#F57F17"/>
+                <TextBlock x:Name="DeletedText" Foreground="#C62828"/>
+                <TextBlock x:Name="UnchangedText" Foreground="Gray"/>
+            </StackPanel>
+            <TextBlock Text="变更明细:" FontWeight="Bold" Margin="0,10,0,0"/>
+            <ListBox x:Name="FileListBox" Height="250"/>
+        </StackPanel>
+    </DockPanel>
+</UserControl>

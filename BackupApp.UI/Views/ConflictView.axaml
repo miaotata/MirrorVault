@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.ConflictView">
+    <DockPanel Margin="10">
+        <StackPanel DockPanel.Dock="Top" Spacing="5">
+            <TextBlock Text="以下文件在两端都被修改，请选择处理方式" FontWeight="Bold" FontSize="14"/>
+            <TextBlock Text="源 → 本地 | 目标 → 远程" Foreground="Gray"/>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Spacing="8" Margin="0,10">
+            <Button x:Name="BtnApply" Content="应用并继续" Width="100"/>
+            <Button x:Name="BtnCancel" Content="取消同步" Width="80"/>
+        </StackPanel>
+        <ListBox x:Name="ConflictListBox" Margin="0,10">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Padding="8" Margin="2" Background="#FFF3E0" CornerRadius="3">
+                        <Grid ColumnDefinitions="*,150">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding RelativePath}" FontWeight="Bold"/>
+                                <StackPanel Orientation="Horizontal" Spacing="20" Margin="0,4">
+                                    <TextBlock Text="{Binding SourceInfo}" FontSize="11" Foreground="#1565C0"/>
+                                    <TextBlock Text="{Binding DestInfo}" FontSize="11" Foreground="#2E7D32"/>
+                                </StackPanel>
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" SelectedIndex="{Binding SelectedResolution}"
+                                      VerticalAlignment="Center" Width="130">
+                                <ComboBoxItem>保留本地</ComboBoxItem>
+                                <ComboBoxItem>保留远程</ComboBoxItem>
+                                <ComboBoxItem>保留两者</ComboBoxItem>
+                                <ComboBoxItem>尝试合并</ComboBoxItem>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

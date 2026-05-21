@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.HistoryView">
+    <DockPanel>
+        <!-- Header -->
+        <StackPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+            <TextBlock x:Name="HeaderText" FontSize="18" FontWeight="Bold"/>
+            <TextBlock x:Name="SubtitleText" FontSize="12" Foreground="{DynamicResource AppMutedBrush}" Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <!-- Timeline list -->
+        <ScrollViewer>
+            <StackPanel x:Name="HistoryPanel" Spacing="6"/>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

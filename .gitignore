@@ -1,0 +1,46 @@
+# Build outputs
+bin/
+obj/
+publish/
+*.exe
+*.dll
+*.pdb
+*.so
+*.dylib
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Conda env (not part of source)
+miniconda3/
+
+# Temp files
+/tmp/
+*.tmp
+*.log
+
+# Sensitive
+*.db
+*.sqlite
+appsettings.*.json
+
+# Large dependencies / temp
+APP_data/
+src/
+
+# Other projects
+UI/
+闪念笔记/
+design_previews/
+
+# IDE / backup files
+*.swp
+*~

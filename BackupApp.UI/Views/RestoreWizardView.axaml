@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.RestoreWizardView">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="10" Spacing="8">
+            <Button x:Name="BtnBack" Content="上一步" Width="70" IsEnabled="False"/>
+            <Button x:Name="BtnNext" Content="下一步" Width="70"/>
+            <Button x:Name="BtnCancel" Content="取消" Width="70"/>
+        </StackPanel>
+
+        <TextBlock DockPanel.Dock="Top" x:Name="StepTitle" FontSize="18" FontWeight="Bold" Margin="10"/>
+
+        <Grid x:Name="ContentPanel" Margin="10"/>
+    </DockPanel>
+</UserControl>

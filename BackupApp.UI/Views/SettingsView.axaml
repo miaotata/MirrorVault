@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.SettingsView">
+    <DockPanel>
+        <TabControl Margin="16">
+            <TabItem Header="主题">
+                <ScrollViewer Margin="0,8,0,0">
+                    <StackPanel Spacing="2" x:Name="ThemePanel"/>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="系统">
+                <StackPanel Spacing="10" Margin="0,10" Width="360">
+                    <TextBlock Text="系统设置" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{DynamicResource AppInkBrush}"/>
+                    <TextBlock Text="保存后重启生效" FontSize="12"
+                               Foreground="{DynamicResource AppMutedBrush}" Margin="0,0,0,4"/>
+
+                    <Border Padding="12,10" CornerRadius="10"
+                            Background="{DynamicResource AppCardBgBrush}"
+                            BorderBrush="{DynamicResource AppHairlineBrush}" BorderThickness="0.5">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="开机自启动" FontWeight="SemiBold" FontSize="13"
+                                           Foreground="{DynamicResource AppInkBrush}"/>
+                                <TextBlock Text="Windows 启动时自动运行"
+                                           FontSize="11" Foreground="{DynamicResource AppMutedBrush}"/>
+                            </StackPanel>
+                            <CheckBox x:Name="ChkAutoStart" Grid.Column="1" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Padding="12,10" CornerRadius="10"
+                            Background="{DynamicResource AppCardBgBrush}"
+                            BorderBrush="{DynamicResource AppHairlineBrush}" BorderThickness="0.5">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="关闭到托盘" FontWeight="SemiBold" FontSize="13"
+                                           Foreground="{DynamicResource AppInkBrush}"/>
+                                <TextBlock Text="关闭窗口时缩到系统托盘"
+                                           FontSize="11" Foreground="{DynamicResource AppMutedBrush}"/>
+                            </StackPanel>
+                            <CheckBox x:Name="ChkMinimizeTray" Grid.Column="1" IsChecked="True"
+                                      VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+
+                    <Border Padding="12,10" CornerRadius="10"
+                            Background="{DynamicResource AppCardBgBrush}"
+                            BorderBrush="{DynamicResource AppHairlineBrush}" BorderThickness="0.5">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="桌面通知" FontWeight="SemiBold" FontSize="13"
+                                           Foreground="{DynamicResource AppInkBrush}"/>
+                                <TextBlock Text="备份完成后弹出通知"
+                                           FontSize="11" Foreground="{DynamicResource AppMutedBrush}"/>
+                            </StackPanel>
+                            <CheckBox x:Name="ChkNotify" Grid.Column="1" IsChecked="True"
+                                      VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </TabItem>
+
+            <TabItem Header="关于">
+                <StackPanel Spacing="8" Margin="0,10">
+                    <TextBlock Text="MirrorVault" FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource AppInkBrush}"/>
+                    <TextBlock Text="自动备份工具" FontSize="14"
+                               Foreground="{DynamicResource AppBodyBrush}"/>
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,6"/>
+                    <TextBlock Text="版本 1.0.0" FontSize="13"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                    <TextBlock Text="C# / .NET 8 + Avalonia UI" FontSize="13"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                    <TextBlock Text="数据库: SQLite" FontSize="13"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                    <TextBlock Text="跨平台: Windows / Linux" FontSize="13"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,6"/>
+                    <TextBlock Text="作者: miaotata" FontSize="13"
+                               Foreground="{DynamicResource AppBodyBrush}"/>
+                    <TextBlock Text="github.com/miaotata" FontSize="12"
+                               Foreground="{DynamicResource AppPrimaryBrush}"/>
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,6"/>
+                    <TextBlock Text="© 2026 MirrorVault" FontSize="11"
+                               Foreground="{DynamicResource AppMutedBrush}"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

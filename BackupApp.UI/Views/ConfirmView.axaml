@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.ConfirmView">
+    <StackPanel Spacing="16" Margin="8">
+        <TextBlock x:Name="MessageText" FontSize="14" FontWeight="Medium"
+                   TextWrapping="Wrap" MaxWidth="360"/>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button x:Name="BtnCancel" Content="取消" Width="70" CornerRadius="6"
+                    Background="{DynamicResource AppHairlineBrush}"
+                    Foreground="{DynamicResource AppInkBrush}"/>
+            <Button x:Name="BtnConfirm" Content="确认删除" Width="90" CornerRadius="6"
+                    Background="#d32f2f" Foreground="White"/>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="BackupApp.UI.Views.TaskEditorView">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                    HorizontalAlignment="Right" Margin="10" Spacing="8">
+            <Button x:Name="BtnSave" Content="保存" Width="80"/>
+            <Button x:Name="BtnCancel" Content="取消" Width="80"/>
+        </StackPanel>
+
+        <TabControl Margin="10">
+            <!-- Tab 1: 基本信息 -->
+            <TabItem Header="基本信息">
+                <StackPanel Margin="10" Spacing="10" Width="500">
+                    <TextBlock Text="任务名称"/>
+                    <TextBox x:Name="TxtName" PlaceholderText="输入任务名称"/>
+                    <CheckBox x:Name="ChkEnabled">启用此任务</CheckBox>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab 2: 源与目标 (merged) -->
+            <TabItem Header="源与目标">
+                <StackPanel Margin="10" Spacing="10" Width="500">
+                    <!-- 源目录 -->
+                    <TextBlock Text="源目录（需要备份的文件夹）" FontWeight="SemiBold"/>
+                    <ListBox x:Name="SourcePathList" Height="120"/>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox x:Name="TxtNewSourcePath" PlaceholderText="输入目录完整路径" Width="300"/>
+                        <Button x:Name="BtnBrowseSource" Content="浏览..." Width="60"/>
+                        <Button x:Name="BtnAddSource" Content="添加" Width="50"/>
+                        <Button x:Name="BtnRemoveSource" Content="移除" Width="50"/>
+                    </StackPanel>
+
+                    <!-- 分隔线 -->
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,8"/>
+
+                    <!-- 目标位置 -->
+                    <TextBlock Text="目标位置（备份到哪里）" FontWeight="SemiBold"/>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBox x:Name="TxtDestPath" PlaceholderText="输入目标完整路径" Width="380"/>
+                        <Button x:Name="BtnBrowseDest" Content="浏览..." Width="60"/>
+                    </StackPanel>
+                    <TextBlock Text="目标类型"/>
+                    <ComboBox x:Name="CmbDestType" SelectedIndex="0">
+                        <ComboBoxItem>本地磁盘</ComboBoxItem>
+                        <ComboBoxItem>网络共享</ComboBoxItem>
+                        <ComboBoxItem>云存储</ComboBoxItem>
+                    </ComboBox>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab 3: 备份模式 (merged mode + schedule) -->
+            <TabItem Header="备份模式">
+                <StackPanel Margin="10" Spacing="12" Width="420">
+                    <TextBlock Text="备份模式" FontWeight="SemiBold"/>
+                    <RadioButton x:Name="RbOneWay" GroupName="Mode">单向备份（源 → 目标）</RadioButton>
+                    <RadioButton x:Name="RbIncremental" GroupName="Mode" IsChecked="True">增量备份（硬链接节省空间）</RadioButton>
+                    <RadioButton x:Name="RbTwoWaySync" GroupName="Mode">双向同步</RadioButton>
+
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,8"/>
+
+                    <TextBlock Text="定时调度" FontWeight="SemiBold"/>
+                    <CheckBox x:Name="ChkSchedule">启用定时执行</CheckBox>
+                    <TextBlock Text="执行时间表达式（分 时 日 月 周）"/>
+                    <TextBox x:Name="TxtCron" PlaceholderText="例如: 每天凌晨2点 - 0 2 * * *"/>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <TextBlock Text="快捷设置:" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnHourly" Content="每小时" Width="60"/>
+                        <Button x:Name="BtnDaily" Content="每天" Width="60"/>
+                        <Button x:Name="BtnWeekly" Content="每周" Width="60"/>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab 4: 文件过滤 -->
+            <TabItem Header="文件过滤">
+                <StackPanel Margin="10" Spacing="10" Width="400">
+                    <TextBlock Text="包含的文件类型（用 ; 分隔，留空=全部）"/>
+                    <TextBox x:Name="TxtInclude" PlaceholderText="*.docx;*.pdf;*.jpg"/>
+                    <TextBlock Text="排除的文件类型"/>
+                    <TextBox x:Name="TxtExclude" PlaceholderText="*.tmp;*.log"/>
+                    <TextBlock Text="排除的目录名（用 ; 分隔）"/>
+                    <TextBox x:Name="TxtExcludeDirs" PlaceholderText="node_modules;.git"/>
+                    <TextBlock Text="最大文件大小 (MB, 0=不限制)"/>
+                    <NumericUpDown x:Name="NumMaxSize" Minimum="0" Maximum="10000" Value="0"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab 5: 版本保留 -->
+            <TabItem Header="版本保留">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Text="分层版本保留策略" FontWeight="Bold"/>
+                    <ListBox x:Name="TierListBox" Height="120"/>
+                    <StackPanel Orientation="Horizontal" Spacing="5">
+                        <Button x:Name="BtnAddTier" Content="添加" Width="55"/>
+                        <Button x:Name="BtnRemoveTier" Content="移除" Width="55"/>
+                    </StackPanel>
+                    <TextBlock Text="快速预设:" Margin="0,6,0,0"/>
+                    <WrapPanel>
+                        <Button x:Name="BtnPresetDaily" Content="1天内全部保留" Width="110" FontSize="11" Margin="2"/>
+                        <Button x:Name="BtnPreset3Day" Content="3天内每天1份" Width="110" FontSize="11" Margin="2"/>
+                        <Button x:Name="BtnPreset7Day" Content="7天内每3天1份" Width="110" FontSize="11" Margin="2"/>
+                        <Button x:Name="BtnPreset30Day" Content="30天内每7天1份" Width="115" FontSize="11" Margin="2"/>
+                        <Button x:Name="BtnPreset90Day" Content="90天外删除" Width="100" FontSize="11" Margin="2"/>
+                    </WrapPanel>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Tab 6: 高级选项 -->
+            <TabItem Header="高级选项">
+                <StackPanel Margin="10" Spacing="12" Width="400">
+                    <CheckBox x:Name="ChkCompression">启用压缩（.zip）</CheckBox>
+                    <CheckBox x:Name="ChkEncryption">启用加密</CheckBox>
+                    <StackPanel x:Name="PanelPassword" IsVisible="False" Margin="20,0">
+                        <TextBlock Text="加密密码"/>
+                        <TextBox x:Name="TxtPassword" PasswordChar="*" PlaceholderText="输入密码"/>
+                    </StackPanel>
+                    <CheckBox x:Name="ChkVerify">备份后校验文件完整性</CheckBox>
+                    <CheckBox x:Name="ChkPreview">执行前预览变更</CheckBox>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

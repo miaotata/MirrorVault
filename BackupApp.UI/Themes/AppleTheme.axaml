@@ -1,0 +1,49 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Apple Clean Minimal Theme -->
+
+    <Color x:Key="ColorPrimary">#0066cc</Color>
+    <Color x:Key="ColorPrimaryActive">#0071e3</Color>
+    <Color x:Key="ColorPrimaryDisabled">#99c2e6</Color>
+    <Color x:Key="ColorInk">#1d1d1f</Color>
+    <Color x:Key="ColorBody">#333333</Color>
+    <Color x:Key="ColorMuted">#7a7a7a</Color>
+    <Color x:Key="ColorMutedSoft">#aaaaaa</Color>
+    <Color x:Key="ColorHairline">#e0e0e0</Color>
+    <Color x:Key="ColorHairlineSoft">#f0f0f0</Color>
+    <Color x:Key="ColorCanvas">#ffffff</Color>
+    <Color x:Key="ColorSurfaceSoft">#f5f5f7</Color>
+    <Color x:Key="ColorSurfaceCard">#fafafc</Color>
+    <Color x:Key="ColorSurfaceDark">#1d1d1f</Color>
+    <Color x:Key="ColorOnPrimary">#ffffff</Color>
+    <Color x:Key="ColorAccentTeal">#5ac8fa</Color>
+    <Color x:Key="ColorSuccess">#34c759</Color>
+    <Color x:Key="ColorWarning">#ff9500</Color>
+    <Color x:Key="ColorError">#ff3b30</Color>
+
+    <SolidColorBrush x:Key="AppPrimaryBrush" Color="{StaticResource ColorPrimary}"/>
+    <SolidColorBrush x:Key="AppPrimaryActiveBrush" Color="{StaticResource ColorPrimaryActive}"/>
+    <SolidColorBrush x:Key="AppInkBrush" Color="{StaticResource ColorInk}"/>
+    <SolidColorBrush x:Key="AppBodyBrush" Color="{StaticResource ColorBody}"/>
+    <SolidColorBrush x:Key="AppMutedBrush" Color="{StaticResource ColorMuted}"/>
+    <SolidColorBrush x:Key="AppHairlineBrush" Color="{StaticResource ColorHairline}"/>
+    <SolidColorBrush x:Key="AppCanvasBrush" Color="{StaticResource ColorCanvas}"/>
+    <SolidColorBrush x:Key="AppSurfaceBrush" Color="{StaticResource ColorSurfaceSoft}"/>
+    <SolidColorBrush x:Key="AppSurfaceCardBrush" Color="{StaticResource ColorSurfaceCard}"/>
+    <SolidColorBrush x:Key="AppOnPrimaryBrush" Color="{StaticResource ColorOnPrimary}"/>
+    <SolidColorBrush x:Key="AppSuccessBrush" Color="{StaticResource ColorSuccess}"/>
+    <SolidColorBrush x:Key="AppWarningBrush" Color="{StaticResource ColorWarning}"/>
+    <SolidColorBrush x:Key="AppErrorBrush" Color="{StaticResource ColorError}"/>
+    <SolidColorBrush x:Key="AppAccentBrush" Color="{StaticResource ColorAccentTeal}"/>
+    <SolidColorBrush x:Key="AppBgBrush" Color="{StaticResource ColorCanvas}"/>
+    <SolidColorBrush x:Key="AppCardBgBrush" Color="{StaticResource ColorSurfaceCard}"/>
+
+    <x:Double x:Key="AppCornerRadius">10</x:Double>
+    <x:Double x:Key="AppSpacing">10</x:Double>
+    <x:Double x:Key="AppSpacingLg">20</x:Double>
+
+    <SolidColorBrush x:Key="StatusEnabledBrush" Color="{StaticResource ColorSuccess}"/>
+    <SolidColorBrush x:Key="StatusDisabledBrush" Color="{StaticResource ColorMuted}"/>
+
+</ResourceDictionary>
