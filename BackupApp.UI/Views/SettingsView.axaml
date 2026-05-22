@@ -69,7 +69,7 @@
                     <TextBlock Text="自动备份工具" FontSize="14"
                                Foreground="{DynamicResource AppBodyBrush}"/>
                     <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,6"/>
-                    <TextBlock Text="版本 1.0.0" FontSize="13"
+                    <TextBlock Text="版本 1.1.0" FontSize="13"
                                Foreground="{DynamicResource AppMutedBrush}"/>
                     <TextBlock Text="C# / .NET 8 + Avalonia UI" FontSize="13"
                                Foreground="{DynamicResource AppMutedBrush}"/>
