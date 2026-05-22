@@ -38,7 +38,6 @@ src/
 
 # Other projects
 UI/
-闪念笔记/
 design_previews/
 
 # IDE / backup files
@@ -46,6 +45,4 @@ design_previews/
 *~
 
 # other
-CLAUDE.md
 updata.md
-.gitgnore
