@@ -3,15 +3,18 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using BackupApp.Core.Services;
+using BackupApp.Core.Storage;
 
 namespace BackupApp.UI.Views;
 
 public partial class SettingsView : UserControl
 {
     private readonly List<ThemeOption> _themes;
+    private readonly ConfigStore _configStore;
 
-    public SettingsView()
+    public SettingsView(ConfigStore configStore)
     {
+        _configStore = configStore;
         InitializeComponent();
 
         _themes = new List<ThemeOption>
@@ -24,6 +27,25 @@ public partial class SettingsView : UserControl
         };
 
         BuildThemeList();
+        LoadSettings();
+        BindSettingsEvents();
+    }
+
+    private void LoadSettings()
+    {
+        ChkAutoStart.IsChecked = _configStore.GetSetting("autostart") == "1";
+        ChkMinimizeTray.IsChecked = _configStore.GetSetting("minimize_tray", "1") == "1";
+        ChkNotify.IsChecked = _configStore.GetSetting("notify", "1") == "1";
+    }
+
+    private void BindSettingsEvents()
+    {
+        ChkAutoStart.IsCheckedChanged += (_, _) =>
+            _configStore.SetSetting("autostart", ChkAutoStart.IsChecked == true ? "1" : "0");
+        ChkMinimizeTray.IsCheckedChanged += (_, _) =>
+            _configStore.SetSetting("minimize_tray", ChkMinimizeTray.IsChecked == true ? "1" : "0");
+        ChkNotify.IsCheckedChanged += (_, _) =>
+            _configStore.SetSetting("notify", ChkNotify.IsChecked == true ? "1" : "0");
     }
 
     private IBrush Res(string key, string fallbackHex)

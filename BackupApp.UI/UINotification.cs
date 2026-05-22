@@ -48,51 +48,58 @@ public class UINotification : IBackupNotification
         });
     }
 
-    public async Task<SyncResult?> OnConflictRequired(BackupTask task, SyncResult syncResult)
+    public Task<SyncResult?> OnConflictRequired(BackupTask task, SyncResult syncResult)
     {
-        if (_mainWindow == null) return null;
+        if (_mainWindow == null) return Task.FromResult<SyncResult?>(null);
 
         var tcs = new TaskCompletionSource<SyncResult?>();
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            var view = new ConflictView(syncResult.Conflicts);
-            _mainWindow.ShowOverlay(view);
+        var view = new ConflictView(syncResult.Conflicts);
+        _mainWindow.ShowOverlay(view);
 
-            view.WaitForResultAsync().ContinueWith(t =>
+        view.WaitForResultAsync().ContinueWith(t =>
+        {
+            var confirmed = t.Result;
+            if (confirmed)
             {
-                if (t.Result)
-                {
-                    var resolutions = view.GetResolutions();
-                    for (int i = 0; i < syncResult.Conflicts.Count && i < resolutions.Count; i++)
-                        syncResult.Conflicts[i].Resolution = resolutions[i];
-                    tcs.SetResult(syncResult);
-                }
-                else
-                {
-                    tcs.SetResult(null);
-                }
+                var resolutions = view.GetResolutions();
+                for (int i = 0; i < syncResult.Conflicts.Count && i < resolutions.Count; i++)
+                    syncResult.Conflicts[i].Resolution = resolutions[i];
+            }
+            Dispatcher.UIThread.Post(() =>
+            {
                 _mainWindow.HideOverlay();
+                tcs.SetResult(confirmed ? syncResult : null);
             });
         });
-        return await tcs.Task;
+
+        return tcs.Task;
     }
 
-    public async Task<bool> OnPreviewReady(BackupTask task, ScanResult scan)
+    public Task<bool> OnPreviewReady(BackupTask task, ScanResult scan)
     {
-        if (_mainWindow == null) return false;
+        if (_mainWindow == null) return Task.FromResult(false);
 
         var tcs = new TaskCompletionSource<bool>();
-        await Dispatcher.UIThread.InvokeAsync(() =>
-        {
-            var view = new PreviewView(scan, task.Name);
-            _mainWindow.ShowOverlay(view);
+        var view = new PreviewView(scan, task.Name);
+        _mainWindow.ShowOverlay(view);
 
-            view.WaitForResultAsync().ContinueWith(t =>
+        view.Confirmed += () =>
+        {
+            Dispatcher.UIThread.Post(() =>
             {
-                tcs.SetResult(t.Result);
                 _mainWindow.HideOverlay();
+                tcs.TrySetResult(true);
             });
-        });
-        return await tcs.Task;
+        };
+        view.Cancelled += () =>
+        {
+            Dispatcher.UIThread.Post(() =>
+            {
+                _mainWindow.HideOverlay();
+                tcs.TrySetResult(false);
+            });
+        };
+
+        return tcs.Task;
     }
 }

@@ -41,7 +41,33 @@ public class ConfigStore : IDisposable
                 enabled INTEGER NOT NULL DEFAULT 1,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
             )";
+        cmd.ExecuteNonQuery();
+    }
+
+    public string GetSetting(string key, string defaultValue = "")
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT value FROM settings WHERE key = @key";
+        cmd.Parameters.AddWithValue("@key", key);
+        var result = cmd.ExecuteScalar();
+        return result?.ToString() ?? defaultValue;
+    }
+
+    public void SetSetting(string key, string value)
+    {
+        using var conn = new SqliteConnection(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "INSERT OR REPLACE INTO settings (key, value) VALUES (@key, @value)";
+        cmd.Parameters.AddWithValue("@key", key);
+        cmd.Parameters.AddWithValue("@value", value);
         cmd.ExecuteNonQuery();
     }
 

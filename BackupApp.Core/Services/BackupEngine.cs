@@ -47,9 +47,9 @@ public class BackupEngine
         _notification = notification;
     }
 
-    public async Task<BackupManifest?> RunBackupAsync(Guid taskId, string? password = null)
+    public async Task<BackupManifest?> RunBackupAsync(Guid taskId, IProgress<BackupProgress>? progress = null,
+        CancellationToken cancellationToken = default, string? password = null)
     {
-        await Task.CompletedTask; // async entry for future I/O work
         var task = _configStore.GetTask(taskId);
         if (task == null) throw new InvalidOperationException("Task not found");
 
@@ -62,7 +62,7 @@ public class BackupEngine
 
             if (task.BackupMode == BackupMode.TwoWaySync)
             {
-                var syncResult = _syncEngine.ExecuteSync(task);
+                var syncResult = await Task.Run(() => _syncEngine.ExecuteSync(task)).ConfigureAwait(true);
                 if (syncResult.HasConflicts && _notification != null)
                 {
                     var resolved = await _notification.OnConflictRequired(task, syncResult);
@@ -84,7 +84,7 @@ public class BackupEngine
             }
 
             var previousManifest = _manifestStore.GetLatestManifest(task.DestPath, task.Name);
-            var scan = _scanner.Scan(task.SourcePaths, task.Filters, previousManifest);
+            var scan = await Task.Run(() => _scanner.Scan(task.SourcePaths, task.Filters, previousManifest)).ConfigureAwait(true);
 
             if (task.Options.PreviewBeforeRun && _notification != null)
             {
@@ -96,28 +96,26 @@ public class BackupEngine
                 }
             }
 
-            manifest = task.BackupMode switch
+            manifest = await Task.Run(() => task.BackupMode switch
             {
-                BackupMode.OneWay => _executor.ExecuteOneWay(task, scan, previousManifest),
-                BackupMode.Incremental => _executor.ExecuteIncremental(task, scan, previousManifest),
+                BackupMode.OneWay => _executor.ExecuteOneWay(task, scan, previousManifest, progress, cancellationToken),
+                BackupMode.Incremental => _executor.ExecuteIncremental(task, scan, previousManifest, progress, cancellationToken),
                 _ => throw new NotSupportedException($"Mode {task.BackupMode} not supported")
-            };
+            }, cancellationToken).ConfigureAwait(true);
 
             if (task.Options.CompressionEnabled)
             {
-                var dataDir = _layout.GetDataDir(task.DestPath, task.Name, manifest.Timestamp);
-                _compression.CompressDirectory(dataDir);
-                Directory.Delete(dataDir, recursive: true);
-            }
-
-            if (task.Options.EncryptionEnabled && !string.IsNullOrEmpty(password))
-            {
-                // Encryption handled during copy in BackupExecutor
+                await Task.Run(() =>
+                {
+                    var dataDir = _layout.GetDataDir(task.DestPath, task.Name, manifest.Timestamp);
+                    _compression.CompressDirectory(dataDir);
+                    Directory.Delete(dataDir, recursive: true);
+                }).ConfigureAwait(true);
             }
 
             if (task.Options.VerifyAfterBackup)
             {
-                var verifyResult = _verification.Verify(task, manifest);
+                var verifyResult = await Task.Run(() => _verification.Verify(task, manifest)).ConfigureAwait(true);
                 if (!verifyResult.AllOk)
                 {
                     manifest.Status = BackupStatus.Partial;
@@ -156,4 +154,7 @@ public class BackupEngine
 
     public List<BackupManifest> GetTimeline(string destPath, string taskName)
         => _restoreEngine.GetTimeline(destPath, taskName);
+
+    public void DeleteVersion(string destPath, string taskName, Guid runId)
+        => _manifestStore.DeleteManifest(destPath, taskName, runId);
 }

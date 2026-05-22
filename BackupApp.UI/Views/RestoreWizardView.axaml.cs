@@ -39,13 +39,49 @@ public partial class RestoreWizardView : UserControl
         sp.Children.Add(new TextBlock { Text = $"任务: {_task.Name}", FontWeight = FontWeight.Bold });
         sp.Children.Add(new TextBlock { Text = $"共 {_timeline.Count} 个备份版本" });
 
-        var lb = new ListBox { Height = 250 };
-        lb.ItemsSource = _timeline.Select(m => $"{m.Timestamp:yyyy-MM-dd HH:mm:ss} | {m.Files.Count} 个文件 | {m.Status}");
-        lb.SelectionChanged += (_, _) =>
+        var listPanel = new StackPanel { Spacing = 4 };
+        var scroll = new ScrollViewer { Height = 280, Content = listPanel };
+
+        foreach (var m in _timeline)
         {
-            if (lb.SelectedIndex >= 0) _selected = _timeline[lb.SelectedIndex];
-        };
-        sp.Children.Add(lb);
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Avalonia.Thickness(0, 2) };
+            var info = new TextBlock
+            {
+                Text = $"{m.Timestamp:yyyy-MM-dd HH:mm:ss} | {m.Files.Count} 个文件 | {m.Status}",
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            row.Children.Add(info);
+            Grid.SetColumn(info, 0);
+
+            var delBtn = new Button
+            {
+                Content = "删除",
+                Width = 56, Height = 26, FontSize = 11,
+                Padding = new Avalonia.Thickness(4, 2),
+                CornerRadius = new Avalonia.CornerRadius(6),
+                Background = Brush.Parse("#F44336"),
+                Foreground = Brush.Parse("#FFFFFF"),
+                Margin = new Avalonia.Thickness(8, 0, 0, 0),
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center
+            };
+            var captured = m;
+            delBtn.Click += (_, _) =>
+            {
+                try
+                {
+                    _engine.DeleteVersion(_task.DestPath, _task.Name, captured.RunId);
+                }
+                catch { /* ignore */ }
+                ShowStep1();
+            };
+            row.Children.Add(delBtn);
+            Grid.SetColumn(delBtn, 1);
+
+            row.PointerPressed += (_, _) => { _selected = captured; };
+            listPanel.Children.Add(row);
+        }
+
+        sp.Children.Add(scroll);
         ContentPanel.Children.Clear();
         ContentPanel.Children.Add(sp);
         UpdateButtons(false, true);

@@ -1,11 +1,14 @@
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
+using BackupApp.Core.Models;
 using BackupApp.Core.Services;
 using BackupApp.Core.Storage;
 
@@ -109,6 +112,7 @@ public partial class App : Application
     {
         try
         {
+            var statusItem = new NativeMenuItem("就绪") { IsEnabled = false };
             var showItem = new NativeMenuItem("显示主窗口");
             showItem.Click += (_, _) =>
             {
@@ -132,6 +136,8 @@ public partial class App : Application
                 IsVisible = true,
                 Menu = new NativeMenu
                 {
+                    statusItem,
+                    new NativeMenuItemSeparator(),
                     showItem,
                     new NativeMenuItemSeparator(),
                     exitItem
@@ -142,6 +148,23 @@ public partial class App : Application
                 _mainWindow?.Show();
                 _mainWindow?.Activate();
             };
+
+            var timer = new DispatcherTimer(TimeSpan.FromSeconds(2), DispatcherPriority.Background,
+                (_, _) =>
+                {
+                    var running = _mainWindow?.RunningTaskInfo;
+                    if (running != null)
+                    {
+                        statusItem.Header = $"⏳ {running.TaskName} — {running.Percent}%";
+                        _trayIcon!.ToolTipText = $"MirrorVault — {running.TaskName}: {running.Percent}%";
+                    }
+                    else
+                    {
+                        statusItem.Header = "就绪";
+                        _trayIcon!.ToolTipText = "MirrorVault — 自动备份工具";
+                    }
+                });
+            timer.Start();
         }
         catch (Exception ex)
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
@@ -20,6 +21,10 @@ public partial class MainWindow : Window
     private readonly BackupEngine _backupEngine;
     private UserControl? _currentView;
     private bool _isExiting;
+    private readonly Dictionary<Guid, BackupProgress> _runningProgress = new();
+    private readonly Dictionary<Guid, CancellationTokenSource> _runningCts = new();
+
+    public BackupProgress? RunningTaskInfo => _runningProgress.Values.FirstOrDefault();
 
     // Windows API for taskbar appearance and system menu
     [DllImport("user32.dll")]
@@ -137,6 +142,13 @@ public partial class MainWindow : Window
                 return IntPtr.Zero;
             }
         }
+        // Handle single-instance activation from another process
+        if ((int)msg == Program.WmActivate && Program.WmActivate != 0)
+        {
+            Show();
+            Activate();
+            return IntPtr.Zero;
+        }
         return CallWindowProc(_originalWndProc, hWnd, msg, wParam, lParam);
     }
 
@@ -196,7 +208,7 @@ public partial class MainWindow : Window
 
     private void ShowSettings()
     {
-        ShowView(new SettingsView());
+        ShowView(new SettingsView(_configStore));
     }
 
     private void ShowTaskEditor(BackupTask? task)
@@ -236,23 +248,35 @@ public partial class MainWindow : Window
         foreach (var t in tasks)
         {
             var isEnabled = t.Enabled;
+            var isRunning = _runningProgress.TryGetValue(t.Id, out var prog);
             items.Add(new TaskDisplayItem
             {
                 Id = t.Id,
                 Name = t.Name,
                 Icon = GetIcon(t.BackupMode),
                 ModeText = GetModeText(t.BackupMode),
-                DisplayLastRun = $"上次: {t.UpdatedAt:yyyy-MM-dd HH:mm}",
-                StatusText = isEnabled ? "已启用" : "已禁用",
-                StatusBg = isEnabled ? Brush.Parse("#e3f7e7") : Brush.Parse("#f5f5f7"),
-                StatusFg = isEnabled ? Brush.Parse("#1e7e34") : Brush.Parse("#8e8e93")
+                DisplayLastRun = isRunning ? "备份中…" : $"上次: {t.UpdatedAt:yyyy-MM-dd HH:mm}",
+                StatusText = isRunning ? "运行中" : (isEnabled ? "已启用" : "已禁用"),
+                StatusBg = isRunning ? Brush.Parse("#e3f2fd") : (isEnabled ? Brush.Parse("#e3f7e7") : Brush.Parse("#f5f5f7")),
+                StatusFg = isRunning ? Brush.Parse("#1565c0") : (isEnabled ? Brush.Parse("#1e7e34") : Brush.Parse("#8e8e93")),
+                IsRunning = isRunning,
+                ProgressPercent = prog?.Percent ?? 0,
+                ProgressText = isRunning ? $"{prog!.Phase} {prog.ProcessedFiles}/{prog.TotalFiles}" : ""
             });
         }
         TaskListBox.ItemsSource = items;
         EmptyState.IsVisible = !items.Any();
         TxtStatus.Text = tasks.Any() ? "就绪" : "暂无任务";
-        TxtNextRun.Text = tasks.Any(t => t.Schedule.Enabled)
-            ? $"下次调度: {tasks.Where(t => t.Schedule.Enabled && t.Schedule.NextRun.HasValue).Select(t => t.Schedule.NextRun!.Value).DefaultIfEmpty().Min():yyyy-MM-dd HH:mm}"
+        var now = DateTime.Now;
+        var nextRun = tasks
+            .Where(t => t.Schedule.Enabled)
+            .Select(t => SchedulerService.GetNextRun(t.Schedule.CronExpression, null, now))
+            .Where(dt => dt.HasValue)
+            .Select(dt => dt!.Value)
+            .DefaultIfEmpty()
+            .Min();
+        TxtNextRun.Text = nextRun != default
+            ? $"下次调度: {nextRun:yyyy-MM-dd HH:mm:ss}"
             : "下次调度: 无";
     }
 
@@ -324,19 +348,63 @@ public partial class MainWindow : Window
         else ShowSelectHint();
     }
 
-    private async void RunSelectedTask()
+    private void RunSelectedTask()
     {
         if (TaskListBox.SelectedItem is TaskDisplayItem item)
         {
             ClearStatusHint();
             TxtStatus.Text = $"执行中: {item.Name}...";
-            var manifest = await _backupEngine.RunBackupAsync(item.Id);
-            TxtStatus.Text = manifest?.Status == BackupStatus.Success
-                ? $"完成: {item.Name}"
-                : $"失败: {item.Name}";
-            RefreshTaskList();
+
+            var cts = new CancellationTokenSource();
+            _runningCts[item.Id] = cts;
+
+            var progress = new Progress<BackupProgress>(p =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _runningProgress[p.TaskId] = p;
+                    TxtStatus.Text = $"执行中: {p.TaskName} — {p.Percent}%";
+                    RefreshTaskList();
+                });
+            });
+
+            _ = _backupEngine.RunBackupAsync(item.Id, progress, cts.Token).ContinueWith(t =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    _runningProgress.Remove(item.Id);
+                    _runningCts.Remove(item.Id);
+
+                    if (t.IsCanceled)
+                        TxtStatus.Text = $"已取消: {item.Name}";
+                    else
+                    {
+                        var manifest = t.Result;
+                        TxtStatus.Text = manifest?.Status == BackupStatus.Success
+                            ? $"完成: {item.Name}"
+                            : $"失败: {item.Name}";
+                    }
+                    RefreshTaskList();
+                });
+            });
         }
         else ShowSelectHint();
+    }
+
+    private void StopCurrentTask()
+    {
+        var runningId = _runningCts.Keys.FirstOrDefault();
+        if (runningId != Guid.Empty && _runningCts.TryGetValue(runningId, out var cts))
+            cts.Cancel();
+    }
+
+    private void StopTask_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.DataContext is TaskDisplayItem item)
+        {
+            if (_runningCts.TryGetValue(item.Id, out var cts))
+                cts.Cancel();
+        }
     }
 
     private void OpenRestoreWizard()
@@ -374,4 +442,7 @@ public class TaskDisplayItem
     public string StatusText { get; set; } = "";
     public IBrush? StatusBg { get; set; }
     public IBrush? StatusFg { get; set; }
+    public bool IsRunning { get; set; }
+    public int ProgressPercent { get; set; }
+    public string ProgressText { get; set; } = "";
 }

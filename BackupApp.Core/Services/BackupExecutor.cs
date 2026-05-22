@@ -1,3 +1,4 @@
+using System.Threading;
 using BackupApp.Core.Models;
 using BackupApp.Core.Storage;
 
@@ -14,14 +15,21 @@ public class BackupExecutor
         _scanner = scanner;
     }
 
-    public BackupManifest ExecuteOneWay(BackupTask task, ScanResult scan, BackupManifest? previousManifest)
+    public BackupManifest ExecuteOneWay(BackupTask task, ScanResult scan, BackupManifest? previousManifest,
+        IProgress<BackupProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         var timestamp = DateTime.Now;
         var dataDir = _layout.GetDataDir(task.DestPath, task.Name, timestamp);
         Directory.CreateDirectory(dataDir);
 
-        foreach (var entry in scan.Files.Where(f => f.Status != FileStatus.Deleted))
+        var files = scan.Files.Where(f => f.Status != FileStatus.Deleted).ToList();
+        var total = files.Count;
+        var processed = 0;
+
+        foreach (var entry in files)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var destPath = Path.Combine(dataDir, entry.RelativePath);
             var destDir = Path.GetDirectoryName(destPath)!;
             if (!Directory.Exists(destDir)) Directory.CreateDirectory(destDir);
@@ -31,12 +39,20 @@ public class BackupExecutor
 
             File.Copy(sourcePath, destPath, overwrite: true);
             File.SetLastWriteTimeUtc(destPath, entry.LastModified);
+
+            processed++;
+            progress?.Report(new BackupProgress
+            {
+                TaskId = task.Id, TaskName = task.Name,
+                Phase = "备份中", ProcessedFiles = processed, TotalFiles = total
+            });
         }
 
         return CreateManifest(task, scan, timestamp, dataDir);
     }
 
-    public BackupManifest ExecuteIncremental(BackupTask task, ScanResult scan, BackupManifest? previousManifest)
+    public BackupManifest ExecuteIncremental(BackupTask task, ScanResult scan, BackupManifest? previousManifest,
+        IProgress<BackupProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         var timestamp = DateTime.Now;
         var dataDir = _layout.GetDataDir(task.DestPath, task.Name, timestamp);
@@ -46,8 +62,13 @@ public class BackupExecutor
             ? _layout.GetDataDir(task.DestPath, task.Name, previousManifest.Timestamp)
             : null;
 
+        var total = scan.Files.Count;
+        var processed = 0;
+
         foreach (var entry in scan.Files)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var destPath = Path.Combine(dataDir, entry.RelativePath);
             var destDir = Path.GetDirectoryName(destPath)!;
             if (!Directory.Exists(destDir)) Directory.CreateDirectory(destDir);
@@ -70,6 +91,13 @@ public class BackupExecutor
                     File.SetLastWriteTimeUtc(destPath, entry.LastModified);
                     break;
             }
+
+            processed++;
+            progress?.Report(new BackupProgress
+            {
+                TaskId = task.Id, TaskName = task.Name,
+                Phase = "备份中", ProcessedFiles = processed, TotalFiles = total
+            });
         }
 
         return CreateManifest(task, scan, timestamp, dataDir);

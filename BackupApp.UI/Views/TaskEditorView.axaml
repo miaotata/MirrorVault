@@ -51,23 +51,83 @@
 
             <!-- Tab 3: 备份模式 (merged mode + schedule) -->
             <TabItem Header="备份模式">
-                <StackPanel Margin="10" Spacing="12" Width="420">
+                <StackPanel Margin="10" Spacing="10">
+                    <!-- Backup mode: horizontal -->
                     <TextBlock Text="备份模式" FontWeight="SemiBold"/>
-                    <RadioButton x:Name="RbOneWay" GroupName="Mode">单向备份（源 → 目标）</RadioButton>
-                    <RadioButton x:Name="RbIncremental" GroupName="Mode" IsChecked="True">增量备份（硬链接节省空间）</RadioButton>
-                    <RadioButton x:Name="RbTwoWaySync" GroupName="Mode">双向同步</RadioButton>
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <RadioButton x:Name="RbOneWay" GroupName="Mode">单向备份</RadioButton>
+                        <RadioButton x:Name="RbIncremental" GroupName="Mode" IsChecked="True">增量备份</RadioButton>
+                        <RadioButton x:Name="RbTwoWaySync" GroupName="Mode">双向同步</RadioButton>
+                    </StackPanel>
 
-                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,8"/>
+                    <Border Height="1" Background="{DynamicResource AppHairlineBrush}" Margin="0,4"/>
 
+                    <!-- Schedule -->
                     <TextBlock Text="定时调度" FontWeight="SemiBold"/>
                     <CheckBox x:Name="ChkSchedule">启用定时执行</CheckBox>
-                    <TextBlock Text="执行时间表达式（分 时 日 月 周）"/>
-                    <TextBox x:Name="TxtCron" PlaceholderText="例如: 每天凌晨2点 - 0 2 * * *"/>
-                    <StackPanel Orientation="Horizontal" Spacing="5">
-                        <TextBlock Text="快捷设置:" VerticalAlignment="Center"/>
-                        <Button x:Name="BtnHourly" Content="每小时" Width="60"/>
-                        <Button x:Name="BtnDaily" Content="每天" Width="60"/>
-                        <Button x:Name="BtnWeekly" Content="每周" Width="60"/>
+
+                    <!-- Schedule type: horizontal radio buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" x:Name="ScheduleOptions">
+                        <RadioButton x:Name="RbHourly" GroupName="ScheduleType" IsChecked="True">每小时</RadioButton>
+                        <RadioButton x:Name="RbDaily" GroupName="ScheduleType">每天</RadioButton>
+                        <RadioButton x:Name="RbWeekly" GroupName="ScheduleType">每周</RadioButton>
+                        <RadioButton x:Name="RbMonthly" GroupName="ScheduleType">每月</RadioButton>
+                        <RadioButton x:Name="RbCustom" GroupName="ScheduleType">自定义</RadioButton>
+                    </StackPanel>
+
+                    <!-- Sub-control: Hourly -->
+                    <StackPanel Orientation="Horizontal" Spacing="4" x:Name="PanelHourly">
+                        <TextBlock Text="每小时的第" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbMinute" Width="58"/>
+                        <TextBlock Text="分钟执行" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Sub-control: Daily -->
+                    <StackPanel Orientation="Horizontal" Spacing="4" x:Name="PanelDaily" IsVisible="False">
+                        <TextBlock Text="每天" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbDailyH" Width="58"/>
+                        <TextBlock Text="时" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbDailyM" Width="58"/>
+                        <TextBlock Text="分" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Sub-control: Weekly -->
+                    <StackPanel Orientation="Horizontal" Spacing="4" x:Name="PanelWeekly" IsVisible="False">
+                        <TextBlock Text="每周" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbWeekDay" Width="80">
+                            <ComboBoxItem Tag="1">周一</ComboBoxItem>
+                            <ComboBoxItem Tag="2">周二</ComboBoxItem>
+                            <ComboBoxItem Tag="3">周三</ComboBoxItem>
+                            <ComboBoxItem Tag="4">周四</ComboBoxItem>
+                            <ComboBoxItem Tag="5">周五</ComboBoxItem>
+                            <ComboBoxItem Tag="6">周六</ComboBoxItem>
+                            <ComboBoxItem Tag="0">周日</ComboBoxItem>
+                        </ComboBox>
+                        <ComboBox x:Name="CmbWeeklyH" Width="58"/>
+                        <TextBlock Text="时" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbWeeklyM" Width="58"/>
+                        <TextBlock Text="分" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Sub-control: Monthly -->
+                    <StackPanel Orientation="Horizontal" Spacing="4" x:Name="PanelMonthly" IsVisible="False">
+                        <TextBlock Text="每月" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbMonthDay" Width="58"/>
+                        <TextBlock Text="号" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbMonthlyH" Width="58"/>
+                        <TextBlock Text="时" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbMonthlyM" Width="58"/>
+                        <TextBlock Text="分" VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Sub-control: Custom interval -->
+                    <StackPanel Orientation="Horizontal" Spacing="4" x:Name="PanelCustom" IsVisible="False">
+                        <TextBlock Text="每" VerticalAlignment="Center"/>
+                        <ComboBox x:Name="CmbIntervalNum" Width="62"/>
+                        <ComboBox x:Name="CmbIntervalUnit" Width="70">
+                            <ComboBoxItem Tag="m">分钟</ComboBoxItem>
+                            <ComboBoxItem Tag="h">小时</ComboBoxItem>
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
             </TabItem>

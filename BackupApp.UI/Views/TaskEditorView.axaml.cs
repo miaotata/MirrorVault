@@ -33,9 +33,6 @@ public partial class TaskEditorView : UserControl
         BtnBrowseDest.Click += async (_, _) => await BrowseFolder(TxtDestPath);
         BtnAddSource.Click += (_, _) => AddSourcePath();
         BtnRemoveSource.Click += (_, _) => RemoveSourcePath();
-        BtnHourly.Click += (_, _) => TxtCron.Text = "0 * * * *";
-        BtnDaily.Click += (_, _) => TxtCron.Text = "0 2 * * *";
-        BtnWeekly.Click += (_, _) => TxtCron.Text = "0 3 * * 1";
         BtnAddTier.Click += (_, _) => AddTier();
         BtnRemoveTier.Click += (_, _) => RemoveTier();
         BtnPresetDaily.Click += (_, _) => ApplyPreset(new[] { new RetentionTier { Name = "1天内", MaxAgeHours = 24, KeepIntervalMinutes = 0 } });
@@ -63,6 +60,16 @@ public partial class TaskEditorView : UserControl
         });
         ChkEncryption.IsCheckedChanged += (_, _) =>
             PanelPassword.IsVisible = ChkEncryption.IsChecked == true;
+
+        // Schedule type radio buttons — toggle sub-panels
+        RbHourly.IsCheckedChanged += (_, _) => UpdateSchedulePanels();
+        RbDaily.IsCheckedChanged += (_, _) => UpdateSchedulePanels();
+        RbWeekly.IsCheckedChanged += (_, _) => UpdateSchedulePanels();
+        RbMonthly.IsCheckedChanged += (_, _) => UpdateSchedulePanels();
+        RbCustom.IsCheckedChanged += (_, _) => UpdateSchedulePanels();
+
+        PopulateTimeDropdowns();
+        UpdateSchedulePanels();
     }
 
     private async Task BrowseFolder(TextBox targetBox)
@@ -133,7 +140,7 @@ public partial class TaskEditorView : UserControl
         RbTwoWaySync.IsChecked = _task.BackupMode == BackupMode.TwoWaySync;
 
         ChkSchedule.IsChecked = _task.Schedule.Enabled;
-        TxtCron.Text = _task.Schedule.CronExpression;
+        SelectCron(_task.Schedule.CronExpression);
 
         TxtInclude.Text = string.Join(";", _task.Filters.IncludePatterns);
         TxtExclude.Text = string.Join(";", _task.Filters.ExcludePatterns);
@@ -148,6 +155,137 @@ public partial class TaskEditorView : UserControl
         ChkPreview.IsChecked = _task.Options.PreviewBeforeRun;
         PanelPassword.IsVisible = _task.Options.EncryptionEnabled;
     }
+
+    // ===== Schedule helpers =====
+
+    private void PopulateTimeDropdowns()
+    {
+        var cmbHours = new[] { CmbDailyH, CmbWeeklyH, CmbMonthlyH };
+        var cmbMinutes = new[] { CmbDailyM, CmbWeeklyM, CmbMonthlyM, CmbMinute };
+        var cmbDays = new[] { CmbMonthDay };
+
+        foreach (var cmb in cmbHours)
+            for (int i = 0; i <= 23; i++) cmb.Items.Add(new ComboBoxItem { Content = i.ToString("D2"), Tag = i });
+        foreach (var cmb in cmbMinutes)
+            for (int i = 0; i <= 59; i++) cmb.Items.Add(new ComboBoxItem { Content = i.ToString("D2"), Tag = i });
+        foreach (var cmb in cmbDays)
+            for (int i = 1; i <= 31; i++) cmb.Items.Add(new ComboBoxItem { Content = i.ToString("D2"), Tag = i });
+
+        CmbIntervalUnit.SelectedIndex = 0;
+        for (int i = 1; i <= 99; i++)
+            CmbIntervalNum.Items.Add(new ComboBoxItem { Content = i.ToString(), Tag = i });
+        CmbIntervalNum.SelectedIndex = 0;
+    }
+
+    private void UpdateSchedulePanels()
+    {
+        PanelHourly.IsVisible = RbHourly.IsChecked == true;
+        PanelDaily.IsVisible = RbDaily.IsChecked == true;
+        PanelWeekly.IsVisible = RbWeekly.IsChecked == true;
+        PanelMonthly.IsVisible = RbMonthly.IsChecked == true;
+        PanelCustom.IsVisible = RbCustom.IsChecked == true;
+    }
+
+    private void SelectCron(string cron)
+    {
+        if (string.IsNullOrWhiteSpace(cron) || cron == "0 * * * *")
+        {
+            RbHourly.IsChecked = true;
+            SelectTagItem(CmbMinute, 0);
+            return;
+        }
+
+        var parts = cron.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 5) return;
+
+        string m = parts[0], h = parts[1], dom = parts[2], mon = parts[3], dow = parts[4];
+
+        // Custom: */N for minutes or 0 */N for hours
+        if (m.StartsWith("*/"))
+        {
+            RbCustom.IsChecked = true;
+            SelectTagItem(CmbIntervalNum, int.Parse(m.Substring(2)));
+            SelectTagItem(CmbIntervalUnit, "m");
+            return;
+        }
+        if (h.StartsWith("*/"))
+        {
+            RbCustom.IsChecked = true;
+            SelectTagItem(CmbIntervalNum, int.Parse(h.Substring(2)));
+            SelectTagItem(CmbIntervalUnit, "h");
+            return;
+        }
+
+        int minute = int.TryParse(m, out var mv) ? mv : 0;
+        int hour = int.TryParse(h, out var hv) ? hv : 0;
+
+        // Monthly: dom is a number
+        if (dom != "*" && int.TryParse(dom, out var dv))
+        {
+            RbMonthly.IsChecked = true;
+            SelectTagItem(CmbMonthDay, dv);
+            SelectTagItem(CmbMonthlyH, hour);
+            SelectTagItem(CmbMonthlyM, minute);
+            return;
+        }
+
+        // Weekly: dow is a number
+        if (dow != "*" && int.TryParse(dow, out var wv))
+        {
+            RbWeekly.IsChecked = true;
+            SelectTagItem(CmbWeekDay, wv);
+            SelectTagItem(CmbWeeklyH, hour);
+            SelectTagItem(CmbWeeklyM, minute);
+            return;
+        }
+
+        // Hourly: m is a number, h is *, dom is *, dow is *
+        if (h == "*" && dom == "*" && dow == "*")
+        {
+            RbHourly.IsChecked = true;
+            SelectTagItem(CmbMinute, minute);
+            return;
+        }
+
+        // Daily (default): h and m are numbers
+        RbDaily.IsChecked = true;
+        SelectTagItem(CmbDailyH, hour);
+        SelectTagItem(CmbDailyM, minute);
+    }
+
+    private static void SelectTagItem(ComboBox cmb, object tag)
+    {
+        foreach (var item in cmb.Items)
+        {
+            if (item is ComboBoxItem cbi && Equals(cbi.Tag, tag))
+            {
+                cmb.SelectedItem = cbi;
+                return;
+            }
+        }
+    }
+
+    private string GetCronExpression()
+    {
+        if (RbHourly.IsChecked == true)
+            return $"{TagValue(CmbMinute)} * * * *";
+        if (RbDaily.IsChecked == true)
+            return $"{TagValue(CmbDailyM)} {TagValue(CmbDailyH)} * * *";
+        if (RbWeekly.IsChecked == true)
+            return $"{TagValue(CmbWeeklyM)} {TagValue(CmbWeeklyH)} * * {TagValue(CmbWeekDay)}";
+        if (RbMonthly.IsChecked == true)
+            return $"{TagValue(CmbMonthlyM)} {TagValue(CmbMonthlyH)} {TagValue(CmbMonthDay)} * *";
+        if (RbCustom.IsChecked == true)
+        {
+            var unit = (CmbIntervalUnit.SelectedItem as ComboBoxItem)?.Tag?.ToString() ?? "m";
+            var n = (CmbIntervalNum.SelectedItem as ComboBoxItem)?.Tag is int v ? v : 1;
+            return unit == "m" ? $"*/{n} * * * *" : $"0 */{n} * * *";
+        }
+        return "* * * * *";
+    }
+
+    private static int TagValue(ComboBox cmb) =>
+        (cmb.SelectedItem as ComboBoxItem)?.Tag is int v ? v : 0;
 
     private void AddSourcePath()
     {
@@ -196,7 +334,7 @@ public partial class TaskEditorView : UserControl
         else if (RbTwoWaySync.IsChecked == true) _task.BackupMode = BackupMode.TwoWaySync;
 
         _task.Schedule.Enabled = ChkSchedule.IsChecked == true;
-        _task.Schedule.CronExpression = TxtCron.Text ?? "";
+        _task.Schedule.CronExpression = GetCronExpression();
 
         _task.Filters.IncludePatterns = (TxtInclude.Text ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
         _task.Filters.ExcludePatterns = (TxtExclude.Text ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();

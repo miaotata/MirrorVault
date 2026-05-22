@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
@@ -11,6 +12,8 @@ public partial class PreviewView : UserControl
     private readonly TaskCompletionSource<bool> _tcs = new();
 
     public Task<bool> WaitForResultAsync() => _tcs.Task;
+    public event Action? Confirmed;
+    public event Action? Cancelled;
 
     public PreviewView(ScanResult scan, string taskName)
     {
@@ -27,8 +30,8 @@ public partial class PreviewView : UserControl
             .ToList();
         FileListBox.ItemsSource = items;
 
-        BtnProceed.Click += (_, _) => _tcs.TrySetResult(true);
-        BtnCancel.Click += (_, _) => _tcs.TrySetResult(false);
+        BtnProceed.Click += (_, _) => { _tcs.TrySetResult(true); Confirmed?.Invoke(); };
+        BtnCancel.Click += (_, _) => { _tcs.TrySetResult(false); Cancelled?.Invoke(); };
     }
 
     private static string FormatSize(long bytes)
