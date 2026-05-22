@@ -2,7 +2,7 @@
 
 > 跨平台桌面备份工具 · 增量备份 · 双向同步 · 可视化定时调度 · 版本保留 · 一键还原
 
-[![Release](https://img.shields.io/badge/Release-v1.0.0-blue)](https://github.com/miaotata/MirrorVault/releases)
+[![Release](https://img.shields.io/badge/Release-v1.1.0-blue)](https://github.com/miaotata/MirrorVault/releases)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-success)]()
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)]()
 
